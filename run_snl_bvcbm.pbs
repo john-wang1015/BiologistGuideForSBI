@@ -1,0 +1,12 @@
+#!/bin/bash -l
+#PBS -N SNL_BVCBM
+#PBS -l walltime=144:00:00
+#PBS -l mem=16GB
+#PBS -l ncpus=1
+cd $PBS_O_WORKDIR
+module load python/3.9.6-gcccore-11.2.0
+module load matlab/2022a
+source .venv/bin/activate
+python -m pip install -U rsnl
+python BVCBM_HPC/snl_bvcbm.py
+deactivate
