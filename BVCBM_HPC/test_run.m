@@ -1,5 +1,5 @@
 clc;clear;
-addpath("Model/");
+addpath("BVCBM_HPC/Model/");
 total_time = 32;
 
 prior.num_params = 9; 
