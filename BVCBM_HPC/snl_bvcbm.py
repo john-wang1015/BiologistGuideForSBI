@@ -84,7 +84,7 @@ def run_bvcbm():
     if not is_exist:
         os.makedirs(folder_name)
     with open(f'{folder_name}snl_thetas.pkl', 'wb') as f:
-        pkl.dump(inference_data.posterior.thetas, f)
+        pkl.dump(inference_data.posterior.theta, f)
 
     plot_and_save_all(inference_data, true_params, folder_name=folder_name)
 

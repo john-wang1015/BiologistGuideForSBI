@@ -88,7 +88,7 @@ def run_bvcbm():
         os.makedirs(folder_name)
 
     with open(f'{folder_name}rsnl_thetas.pkl', 'wb') as f:
-        pkl.dump(inference_data.posterior.thetas, f)
+        pkl.dump(inference_data.posterior.theta, f)
 
     with open(f'{folder_name}rsnl_adj_params.pkl', 'wb') as f:
         pkl.dump(inference_data.posterior.adj_params, f)
