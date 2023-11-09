@@ -50,6 +50,10 @@ def sum_fn(x):
     return x
 
 
+def log_sum_fn(x):
+    return np.log(x)
+
+
 # Build ELFI model...
 def get_model(true_params=None, x_obs=None):
     if true_params is None:
@@ -68,7 +72,7 @@ def get_model(true_params=None, x_obs=None):
     elfi.Simulator(sim_fn, m['g_age'], m['g_age2'],  m['tau'], observed=y, name='BVCBM')
     # summary
     elfi.Summary(sum_fn, m['BVCBM'], name='S')
-    elfi.Summary(np.log(sum_fn), m['BVCBM'], name='log_S')
+    elfi.Summary(log_sum_fn, m['BVCBM'], name='log_S')
     # distance
     elfi.Distance('euclidean', m['S'], name='d')
     return m
@@ -79,7 +83,6 @@ def run_rbsl():
     likelihood = pdf_methods.robust_likelihood("variance")
     feature_names = ['log_S']
     seed = 1
-    elfi.set_client('multiprocessing')
     # print("cores: ", multiprocessing.cpu_count())
     # true_params = np.array([300.0, 100.0,  16.0])
 
@@ -112,6 +115,9 @@ def run_rbsl():
     logit_transform_bound = [(2, (32*24)-1),
                              (2, 31),
                              (2, (32*24)-3)]
+    
+    elfi.set_client('multiprocessing')
+
     res = r_bsl_v.sample(mcmc_iterations,
                          est_posterior_cov,
                          burn_in=10,
