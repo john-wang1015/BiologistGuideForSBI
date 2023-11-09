@@ -1,7 +1,7 @@
 #!/bin/bash -l
 #PBS -N RSNL_BVCBM
-#PBS -l walltime=144:00:00
-#PBS -l mem=16GB
+#PBS -l walltime=48:00:00
+#PBS -l mem=8GB
 #PBS -l ncpus=1
 cd $PBS_O_WORKDIR
 module load python/3.9.6-gcccore-11.2.0
