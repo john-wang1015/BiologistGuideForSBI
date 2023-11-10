@@ -1,13 +1,12 @@
 import matlab.engine
 import os
-from rsnl.model import get_robust_model
-from rsnl.inference import run_rsnl
-from rsnl.visualisations import plot_and_save_all
+import arviz as az
+from rsnl.model import get_standard_model
+from rsnl.inference import run_snp
 
 import numpyro.distributions as dist
 import jax.random as random
 import jax.numpy as jnp
-import arviz as az
 import pickle as pkl
 from functools import partial
 
@@ -52,13 +51,11 @@ def get_prior():
 
 
 def run_bvcbm():
-    rng_key = random.PRNGKey(0)
     true_params = jnp.array([300.0, 16.0, 100.0])
     
-    model = get_robust_model
-    rng_key = random.PRNGKey(0)
+    model = get_standard_model
+    rng_key = random.PRNGKey(1)
     prior = get_prior()
-    
     eng = matlab.engine.start_matlab()
     sim_fn = partial(bvcbm_simulation, eng=eng)
     x_sim = sim_fn(rng_key, *true_params)
@@ -66,36 +63,38 @@ def run_bvcbm():
 
     theta_dims = 3
 
-    mcmc = run_rsnl(model,
-                    prior,
-                    sim_fn,
-                    sum_fn,
-                    rng_key,
-                    x_sim,
-                    jax_parallelise=False,
-                    true_params=true_params,
-                    theta_dims=3,
-                    num_sims_per_round=1000,
-                    num_rounds=5
-                    )
+    samples = run_snp(prior,
+                   sim_fn,
+                   sum_fn,
+                   rng_key,
+                   x_sim,
+                   jax_parallelise=False,
+                   true_params=true_params,
+                   theta_dims=3,
+                   num_sims_per_round=1000,
+                   num_rounds=5
+                   )
+    eng.quit()
+    print('samples: ', jnp.mean(samples, axis=0))
 
-    mcmc.print_summary()
-    inference_data = az.from_numpyro(mcmc)
-    
-    folder_name = 'res/rsnl/'
-
+    folder_name = "res/snp/"
     is_exist = os.path.exists(folder_name)
+
     if not is_exist:
         os.makedirs(folder_name)
 
-    with open(f'{folder_name}rsnl_thetas.pkl', 'wb') as f:
-        pkl.dump(inference_data.posterior.theta, f)
+    for i in range(samples.shape[1]):
+        plt.hist(samples[:, i].flatten(), bins=100)
+        plt.savefig(f'{folder_name}hist_{str(i)}.png')
+        plt.clf()
 
-    with open(f'{folder_name}rsnl_adj_params.pkl', 'wb') as f:
-        pkl.dump(inference_data.posterior.adj_params, f)
+    with open(f'{folder_name}snp_thetas.pkl', 'wb') as f:
+        pkl.dump(samples, f)
 
-    plot_and_save_all(inference_data, true_params, folder_name=folder_name)
 
+
+
+    pass
 
 if __name__ == '__main__':
     run_bvcbm()

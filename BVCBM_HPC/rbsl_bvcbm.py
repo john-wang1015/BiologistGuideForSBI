@@ -88,21 +88,21 @@ def run_rbsl():
 
     n_sim = 10000
     true_params = {'g_age': 300.0, 'g_age2': 100.0, 'tau': 16.0}
-    pre_sample_methods.plot_features(m, true_params, n_sim, feature_names,
-                                     seed=seed)
-    plt.savefig('rbslv_bvcbm_features.png')
-    plt.clf()
-    n_sim = [100, 300, 500, 1000]
-    log_stdev = pre_sample_methods.log_SL_stdev(model=m,
-                             theta=true_params,
-                             n_sim=n_sim,
-                             feature_names=feature_names,
+    # pre_sample_methods.plot_features(m, true_params, n_sim, feature_names,
+    #                                 seed=seed)
+    #plt.savefig('rbslv_bvcbm_features.png')
+    #plt.clf()
+    #n_sim = [100, 300, 500, 1000]
+    #log_stdev = pre_sample_methods.log_SL_stdev(model=m,
+    #                         theta=true_params,
+    #                         n_sim=n_sim,
+    #                         feature_names=feature_names,
                              # likelihood=likelihood,
-                             M=20,
-                             seed=123)
-    print('log_stdev: ', log_stdev)
+    #                         M=20,
+    #                         seed=123)
+    #print('log_stdev: ', log_stdev)
 
-    nsim_round = 500
+    nsim_round = 350
     r_bsl_v = elfi.BSL(m,
                        nsim_round,
                        batch_size=50,
@@ -110,19 +110,21 @@ def run_rbsl():
                        likelihood=likelihood,
                        seed=seed
                        )
-    mcmc_iterations = 100
-    est_posterior_cov = loadmat('cov_matrix_subset.mat')
+    mcmc_iterations = 110
+    est_posterior_cov = loadmat('cov_matrix_subset.mat')[['subset_matrix']
+    est_posterior_cov = np.array(est_posterior_cov).reshape((3,3))
     logit_transform_bound = [(2, (32*24)-1),
                              (2, 31),
                              (2, (32*24)-3)]
     
     elfi.set_client('multiprocessing')
 
+    params0 = [300.0, 100.0, 16.0]
     res = r_bsl_v.sample(mcmc_iterations,
                          est_posterior_cov,
                          burn_in=10,
                          param_names=['g_age', 'g_age2', 'tau'],
-                         params0=true_params,
+                         params0=params0,
                          logit_transform_bound=logit_transform_bound,
                          bar=False
                          )

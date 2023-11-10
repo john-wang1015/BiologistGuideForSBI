@@ -3,6 +3,7 @@ import os
 import arviz as az
 from rsnl.model import get_standard_model
 from rsnl.inference import run_snl
+from rsnl.visualisations import plot_and_save_all
 
 import numpyro.distributions as dist
 import jax.random as random
