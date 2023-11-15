@@ -110,19 +110,20 @@ def run_rbsl():
                        likelihood=likelihood,
                        seed=seed
                        )
-    mcmc_iterations = 110
-    est_posterior_cov = loadmat('cov_matrix_subset.mat')[['subset_matrix']
+    mcmc_iterations = 1100
+    est_posterior_cov = loadmat('cov_matrix_subset.mat')['subset_matrix']
     est_posterior_cov = np.array(est_posterior_cov).reshape((3,3))
     logit_transform_bound = [(2, (32*24)-1),
-                             (2, 31),
-                             (2, (32*24)-3)]
+                             (2, (32*24)-1),
+                             (2, 31)]
     
     elfi.set_client('multiprocessing')
 
     params0 = [300.0, 100.0, 16.0]
     res = r_bsl_v.sample(mcmc_iterations,
-                         est_posterior_cov,
-                         burn_in=10,
+                         0.1*np.eye(3),
+                         #est_posterior_cov,
+                         burn_in=100,
                          param_names=['g_age', 'g_age2', 'tau'],
                          params0=params0,
                          logit_transform_bound=logit_transform_bound,

@@ -74,8 +74,8 @@ def run_bvcbm():
                    jax_parallelise=False,
                    true_params=true_params,
                    theta_dims=3,
-                   num_sims_per_round=1000,
-                   num_rounds=5
+                   num_sims_per_round=10000,
+                   num_rounds=10
                    )
 
     mcmc.print_summary()

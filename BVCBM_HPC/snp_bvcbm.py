@@ -54,7 +54,7 @@ def run_bvcbm():
     true_params = jnp.array([300.0, 16.0, 100.0])
     
     model = get_standard_model
-    rng_key = random.PRNGKey(1)
+    rng_key = random.PRNGKey(2)
     prior = get_prior()
     eng = matlab.engine.start_matlab()
     sim_fn = partial(bvcbm_simulation, eng=eng)
