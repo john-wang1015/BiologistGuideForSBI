@@ -1,0 +1,22 @@
+WARNING: You are using pip version 21.1.3; however, version 23.3.1 is available.
+You should consider upgrading via the '/mnt/home/n10977341/BGSBI/.venv/bin/python -m pip install --upgrade pip' command.
+Traceback (most recent call last):
+  File "/mnt/home/n10977341/BGSBI/BVCBM_HPC/rbsl_bvcbm_pan1.py", line 175, in <module>
+    run_rbsl()
+  File "/mnt/home/n10977341/BGSBI/BVCBM_HPC/rbsl_bvcbm_pan1.py", line 130, in run_rbsl
+    res = r_bsl_v.sample(mcmc_iterations,#0.1*np.eye(3),
+  File "/mnt/home/n10977341/BGSBI/.venv/lib/python3.9/site-packages/elfi/methods/inference/bsl.py", line 124, in sample
+    return self.infer(n_samples, **kwargs)
+  File "/mnt/home/n10977341/BGSBI/.venv/lib/python3.9/site-packages/elfi/methods/inference/parameter_inference.py", line 531, in infer
+    return super().infer(*args, **kwargs)
+  File "/mnt/home/n10977341/BGSBI/.venv/lib/python3.9/site-packages/elfi/methods/inference/parameter_inference.py", line 248, in infer
+    self.iterate()
+  File "/mnt/home/n10977341/BGSBI/.venv/lib/python3.9/site-packages/elfi/methods/inference/parameter_inference.py", line 292, in iterate
+    self.update(batch, batch_index)
+  File "/mnt/home/n10977341/BGSBI/.venv/lib/python3.9/site-packages/elfi/methods/inference/parameter_inference.py", line 468, in update
+    self._init_round()
+  File "/mnt/home/n10977341/BGSBI/.venv/lib/python3.9/site-packages/elfi/methods/inference/bsl.py", line 210, in _init_round
+    gamma, ll = self.gamma_sampler(self.observed, **self.gamma_sampler_state)
+  File "/mnt/home/n10977341/BGSBI/.venv/lib/python3.9/site-packages/elfi/methods/bsl/slice_gamma_mean.py", line 90, in slice_gamma_mean
+    if target_lower < target:
+ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
