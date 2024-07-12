@@ -1,0 +1,13 @@
+#!/bin/bash -l
+#PBS -N robust_bsl_tracking
+#PBS -l walltime=300:00:00
+#PBS -l mem=40gb
+#PBS -l MATLAB=1
+#PBS -l Statistics_Toolbox=1
+#PBS -l ncpus=16
+#PBS -j oe
+
+module load matlab/2021a
+cd $PBS_O_WORKDIR
+
+matlab -nodisplay -r run01_rbsl_real_tracking

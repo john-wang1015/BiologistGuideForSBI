@@ -4,8 +4,6 @@ function SMC_ABC
     clust = parcluster('local');
     clust.JobStorageLocation = tempdir;
     par = parpool(clust,ncpus); 
-
-    rng(1234); % set seed
     
     %% Inputs
     N = 1000; %initial number of simulations
@@ -13,7 +11,7 @@ function SMC_ABC
     count = 0;
 
     tol_target = 0;  % TARGET TOLERANCE.  IF SET TO ZERO, THE STOPPING RULE IS BASED ON MCMC ACCEPTANCE RATE BELOW
-    pacc_target = 0.01; % STOP ALGORITHM IF MCMC ACCEPTANCE RATE IS TOO SMALL.  IF SET TO 0, STOPPING RULE IS BASED ON ABOVE TARGET TOLERANCE
+    pacc_target = 0.1; % STOP ALGORITHM IF MCMC ACCEPTANCE RATE IS TOO SMALL.  IF SET TO 0, STOPPING RULE IS BASED ON ABOVE TARGET TOLERANCE
 
     %tuning parameters
     alpha = 0.5;
@@ -141,8 +139,9 @@ function SMC_ABC
     %initialise
     p_accept = 1;
     tolmax = theta_trans(N-N_a,num_params+1);
-    
+    tt = 0;
     while p_accept > pacc_target && tolmax > tol_target
+        tt = tt + 1;
 
         %set tol
         tol = theta_trans(N-N_a,num_params+1);
@@ -283,7 +282,9 @@ function SMC_ABC
         display(tolmax)
         display(p_unique)
         
-        save(sprintf('progress%d.mat',ntrack),'theta_trans', 'p_accept','tolmax','p_unique'); %write performance stats to excel
+        save(sprintf('progress%d.mat',tt),'theta_trans', 'p_accept','tolmax','p_unique'); %write performance stats to excel
+
+        fprintf("The total number of simulation is %.d",count);
     end
     
     fprintf("The total number of simulation is %.d",count);

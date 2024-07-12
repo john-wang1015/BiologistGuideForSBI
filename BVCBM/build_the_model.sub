@@ -1,0 +1,15 @@
+#!/bin/bash -l
+#PBS -N build_model
+#PBS -l walltime=0:30:00
+#PBS -l mem=40gb
+#PBS -l MATLAB=1
+#PBS -l Statistics_Toolbox=1
+#PBS -l ncpus=16
+#PBS -j oe
+
+module load matlab/2021a
+module load gcccore/12.3.0
+
+cd $PBS_O_WORKDIR
+
+matlab -nodisplay -r build_the_model
