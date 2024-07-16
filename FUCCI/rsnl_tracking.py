@@ -7,6 +7,7 @@ from rsnl.inference import run_rsnl
 from rsnl.visualisations import plot_and_save_all
 import scipy.io as sio
 import jax
+import time
 
 import numpyro.distributions as dist
 import jax.random as random
@@ -14,16 +15,22 @@ import jax.numpy as jnp
 import pickle as pkl
 from functools import partial
 
-def bvcbm_simulation(theta, eng=None):
-    #theta = np.array([theta])
-    print(theta.shape)
-    n = theta.shape[0]
+def bvcbm_simulation(sim_key, p1, p2, p3, m1, m2, m3, eng=None):
+    theta = jnp.array([p1, p2, p3, m1, m2, m3])
+    tic = time.time()
+    # n = theta.shape[0]
+    n = 1
     eng = matlab.engine.start_matlab()
     theta_matlab = matlab.double(theta.tolist())
-    sx_all = eng.simulator_tracking(theta_matlab, n, 6,  nargout=1)
+    n_matlab = matlab.int64(n)
+    len_obs_matlab = matlab.int64(6)
+    eng.addpath('FUCCI')
+    sx_all = eng.simulator_tracking(theta_matlab, n_matlab, len_obs_matlab,  nargout=1)
     eng.quit()
     sx_all = jnp.asarray(sx_all)
     print(sx_all)
+    toc = time.time()
+    print('Time taken: ', toc-tic)
     return sx_all.flatten()
 
 def sum_fn(x):
@@ -51,7 +58,7 @@ def run_bvcbm():
     
     eng = matlab.engine.start_matlab()
     sim_fn = partial(bvcbm_simulation, eng=eng)
-    x_sim = sio.loadmat('CellTracking_synthetic_dataset.mat')['sy'][0]#sim_fn(rng_key, *true_params)
+    x_sim = sio.loadmat('FUCCI/CellTracking_synthetic_dataset.mat')['sy'][0]#sim_fn(rng_key, *true_params)
     print('x_sim: ', x_sim)
 
     print("initial step ready ...")
@@ -64,7 +71,7 @@ def run_bvcbm():
                     sum_fn,
                     rng_key,
                     x_sim,
-                    jax_parallelise=True,
+                    jax_parallelise=False,
                     true_params=true_params,
                     theta_dims=6,
                     num_sims_per_round=1000,

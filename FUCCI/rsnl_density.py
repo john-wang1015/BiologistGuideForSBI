@@ -7,6 +7,7 @@ from rsnl.inference import run_snl, run_rsnl
 from rsnl.visualisations import plot_and_save_all
 import scipy.io as sio
 import jax
+import time
 
 import numpyro.distributions as dist
 import jax.random as random
@@ -19,13 +20,20 @@ def theta_convert(theta):
 
 def bvcbm_simulation(sim_key, p1, p2, p3, m1, m2, m3, eng=None):
     theta = jnp.array([p1, p2, p3, m1, m2, m3])
-    n = theta.shape[0]
+    tic = time.time()
+    # n = theta.shape[0]
+    n = 1
     eng = matlab.engine.start_matlab()
     theta_matlab = matlab.double(theta.tolist())
-    sx_all = eng.simulator_density(theta_matlab, n, 15,  nargout=1)
+    n_matlab = matlab.int64(n)
+    len_obs_matlab = matlab.int64(15)
+    eng.addpath('FUCCI')
+    sx_all = eng.simulator_density(theta_matlab, n_matlab, len_obs_matlab,  nargout=1)
     eng.quit()
     sx_all = jnp.asarray(sx_all)
     print(sx_all)
+    toc = time.time()
+    print('Time taken: ', toc-tic)
     return sx_all.flatten()
 
 def sum_fn(x):
@@ -45,7 +53,7 @@ def run_bvcbm():
         os.makedirs(folder_name)
 
     rng_key = random.PRNGKey(0)
-    true_params = jnp.array([0.01, 0.15, 0.2, 5, 9,5])
+    true_params = jnp.array([0.01, 0.15, 0.2, 5, 9, 5])
     
     model = get_robust_model
     rng_key = random.PRNGKey(0)
@@ -53,7 +61,9 @@ def run_bvcbm():
     
     eng = matlab.engine.start_matlab()
     sim_fn = partial(bvcbm_simulation, eng=eng)
-    x_sim = sio.loadmat('CellDensity_synthetic_dataset.mat')['sy'][0]#sim_fn(rng_key, *true_params)
+    file_name = 'FUCCI/CellDensity_synthetic_dataset.mat'
+    # file_name = 'CancerDatasets.mat'
+    x_sim = sio.loadmat(file_name)['sy'][0]#sim_fn(rng_key, *true_params)
     print('x_sim: ', x_sim)
 
     theta_dims = 6
@@ -64,7 +74,7 @@ def run_bvcbm():
                     sum_fn,
                     rng_key,
                     x_sim,
-                    jax_parallelise=True,
+                    jax_parallelise=False,
                     true_params=true_params,
                     theta_dims=6,
                     num_sims_per_round=1000,
