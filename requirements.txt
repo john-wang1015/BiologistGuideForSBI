@@ -10,3 +10,4 @@ latex>=0.7.0
 diffrax>=0.0.1
 psutil>=5.8.0
 matlabengine==9.12.0
+rsnl>=0.0.1
