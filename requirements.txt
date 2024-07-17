@@ -9,3 +9,4 @@ arviz>=0.11.2
 latex>=0.7.0
 diffrax>=0.0.1
 psutil>=5.8.0
+matlabengine==9.12.0
