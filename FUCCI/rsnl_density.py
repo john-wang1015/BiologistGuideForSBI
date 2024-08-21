@@ -5,10 +5,13 @@ import arviz as az
 from rsnl.model import get_standard_model, get_robust_model
 from rsnl.inference import run_snl, run_rsnl
 from rsnl.visualisations import plot_and_save_all
+from rsnl.matlab_engine_manager import start_matlab_engine, stop_matlab_engine, engines
 import scipy.io as sio
 import jax
 import time
+import multiprocessing as mp
 
+import numpyro
 import numpyro.distributions as dist
 import jax.random as random
 import jax.numpy as jnp
@@ -23,13 +26,11 @@ def bvcbm_simulation(sim_key, p1, p2, p3, m1, m2, m3, eng=None):
     tic = time.time()
     # n = theta.shape[0]
     n = 1
-    eng = matlab.engine.start_matlab()
+    eng = engines[mp.current_process().pid]
     theta_matlab = matlab.double(theta.tolist())
     n_matlab = matlab.int64(n)
     len_obs_matlab = matlab.int64(15)
-    eng.addpath('FUCCI')
     sx_all = eng.simulator_density(theta_matlab, n_matlab, len_obs_matlab,  nargout=1)
-    eng.quit()
     sx_all = jnp.asarray(sx_all)
     print(sx_all)
     toc = time.time()
@@ -47,7 +48,7 @@ def get_prior():
     return prior
 
 def run_bvcbm():
-    folder_name = "res/rsnl/real_density"
+    folder_name = "res/rsnl/real_density/"
     is_exist = os.path.exists(folder_name)
     if not is_exist:
         os.makedirs(folder_name)
@@ -59,8 +60,7 @@ def run_bvcbm():
     rng_key = random.PRNGKey(0)
     prior = get_prior()
     
-    eng = matlab.engine.start_matlab()
-    sim_fn = partial(bvcbm_simulation, eng=eng)
+    sim_fn = partial(bvcbm_simulation)
     file_name = 'FUCCI/CellDensity_synthetic_dataset.mat'
     # file_name = 'CancerDatasets.mat'
     x_sim = sio.loadmat(file_name)['sy'][0]#sim_fn(rng_key, *true_params)
@@ -75,22 +75,27 @@ def run_bvcbm():
                     rng_key,
                     x_sim,
                     jax_parallelise=False,
+                    mp_parallelise=True,
+                    num_cpus=6,
                     true_params=true_params,
                     theta_dims=6,
-                    num_sims_per_round=1000,
-                    num_rounds=3
+                    num_sims_per_round=10_000,
+                    num_rounds=10,
+                    save_each_round=True,
+                    folder_name=folder_name
                     )
 
     mcmc.print_summary()
     inference_data = az.from_numpyro(mcmc)
-    eng.quit()
-    with open(f'{folder_name}/rsnl_thetas.pkl', 'wb') as f:
+
+    with open(f'{folder_name}rsnl_thetas.pkl', 'wb') as f:
         pkl.dump(inference_data.posterior.theta, f)
 
-    with open(f'{folder_name}/rsnl_adj_params.pkl', 'wb') as f:
+    with open(f'{folder_name}rsnl_adj_params.pkl', 'wb') as f:
         pkl.dump(inference_data.posterior.adj_params, f)
 
     plot_and_save_all(inference_data, true_params, folder_name=folder_name)
 
 if __name__ == '__main__':
+    numpyro.set_host_device_count(6)
     run_bvcbm()
