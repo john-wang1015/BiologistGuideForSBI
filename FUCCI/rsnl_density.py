@@ -1,30 +1,23 @@
-import matlab.engine
-import numpy as np
-import os
-import arviz as az
-from rsnl.model import get_standard_model, get_robust_model
-from rsnl.inference import run_snl, run_rsnl
-from rsnl.visualisations import plot_and_save_all
-from rsnl.matlab_engine_manager import start_matlab_engine, stop_matlab_engine, engines
-import scipy.io as sio
-import jax
-import time
 import multiprocessing as mp
-
-import numpyro
-import numpyro.distributions as dist
-import jax.random as random
-import jax.numpy as jnp
+import os
 import pickle as pkl
 from functools import partial
 
-def theta_convert(theta):
-    return theta
+import arviz as az
+import jax.numpy as jnp
+import jax.random as random
+import matlab.engine
+import numpyro
+import numpyro.distributions as dist
+import scipy.io as sio
+from rsnl.inference import run_rsnl
+from rsnl.model import get_robust_model
+from rsnl.utils import engines
+from rsnl.visualisations import plot_and_save_all
+
 
 def bvcbm_simulation(sim_key, p1, p2, p3, m1, m2, m3, eng=None):
     theta = jnp.array([p1, p2, p3, m1, m2, m3])
-    tic = time.time()
-    # n = theta.shape[0]
     n = 1
     eng = engines[mp.current_process().pid]
     theta_matlab = matlab.double(theta.tolist())
@@ -33,12 +26,12 @@ def bvcbm_simulation(sim_key, p1, p2, p3, m1, m2, m3, eng=None):
     sx_all = eng.simulator_density(theta_matlab, n_matlab, len_obs_matlab,  nargout=1)
     sx_all = jnp.asarray(sx_all)
     print(sx_all)
-    toc = time.time()
-    print('Time taken: ', toc-tic)
     return sx_all.flatten()
+
 
 def sum_fn(x):
     return x
+
 
 def get_prior():
     prior = dist.Uniform(
@@ -46,6 +39,7 @@ def get_prior():
                 high=jnp.array([1., 1., 1., 10., 10., 10.])
             )
     return prior
+
 
 def run_bvcbm():
     folder_name = "res/rsnl/real_density/"
@@ -55,15 +49,14 @@ def run_bvcbm():
 
     rng_key = random.PRNGKey(0)
     true_params = jnp.array([0.01, 0.15, 0.2, 5, 9, 5])
-    
+
     model = get_robust_model
     rng_key = random.PRNGKey(0)
     prior = get_prior()
-    
+
     sim_fn = partial(bvcbm_simulation)
     file_name = 'FUCCI/CellDensity_synthetic_dataset.mat'
-    # file_name = 'CancerDatasets.mat'
-    x_sim = sio.loadmat(file_name)['sy'][0]#sim_fn(rng_key, *true_params)
+    x_sim = sio.loadmat(file_name)['sy'][0]
     print('x_sim: ', x_sim)
 
     theta_dims = 6
@@ -78,7 +71,7 @@ def run_bvcbm():
                     mp_parallelise=True,
                     num_cpus=6,
                     true_params=true_params,
-                    theta_dims=6,
+                    theta_dims=theta_dims,
                     num_sims_per_round=10_000,
                     num_rounds=10,
                     save_each_round=True,
@@ -95,6 +88,7 @@ def run_bvcbm():
         pkl.dump(inference_data.posterior.adj_params, f)
 
     plot_and_save_all(inference_data, true_params, folder_name=folder_name)
+
 
 if __name__ == '__main__':
     numpyro.set_host_device_count(6)
