@@ -1,8 +1,8 @@
 function sx = simulator_tracking(theta, n, len_obs)
     CellTracking = true;
 
-    InitPosData = readmatrix("Data/DataProcessing/FUCCI_processed.xlsx", "sheet","InitPos");
-    CellTrackingData = readmatrix("Data/DataProcessing/FUCCI_processed.xlsx", "sheet","CellTracking");
+    InitPosData = readmatrix("FUCCI/Data/DataProcessing/FUCCI_processed.xlsx", "sheet","InitPos");
+    CellTrackingData = readmatrix("FUCCI/Data/DataProcessing/FUCCI_processed.xlsx", "sheet","CellTracking");
     ntrack = max(CellTrackingData(:,4));
     
     Xmax = 1309.09; %Length of the domain
@@ -14,9 +14,9 @@ function sx = simulator_tracking(theta, n, len_obs)
     sx = zeros(n,len_obs);
     
     % creating initial sample
-    parfor i = 1:n
+    for i = 1:n
         i
-        [SummaryStatData, ExitSimStatus] = Main_simulate(theta(i,:), s, T_record, CellTracking);
+        [SummaryStatData, ExitSimStatus] = Main_simulate(theta, s, T_record, CellTracking);
                               
         if ExitSimStatus %check if simulation finished correctly
             continue;
