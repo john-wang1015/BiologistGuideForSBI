@@ -1,8 +1,8 @@
 function sx = simulator_density(theta, n, len_obs)
     CellTracking = false;
 
-    InitPosData = readmatrix("Data/DataProcessing/FUCCI_processed.xlsx", "sheet","InitPos");
-    CellTrackingData = readmatrix("Data/DataProcessing/FUCCI_processed.xlsx", "sheet","CellTracking");
+    InitPosData = readmatrix("FUCCI/Data/DataProcessing/FUCCI_processed.xlsx", "sheet","InitPos");
+    CellTrackingData = readmatrix("FUCCI/Data/DataProcessing/FUCCI_processed.xlsx", "sheet","CellTracking");
     ntrack = max(CellTrackingData(:,4));
     
     Xmax = 1309.09; %Length of the domain
@@ -14,8 +14,8 @@ function sx = simulator_density(theta, n, len_obs)
     sx = zeros(n,len_obs);
     
     % creating initial sample
-    parfor i = 1:n
-        [SummaryStatData, ExitSimStatus] = Main_simulate(theta(i,:), s, T_record, CellTracking);
+    for i = 1:n
+        [SummaryStatData, ExitSimStatus] = Main_simulate(theta, s, T_record, CellTracking);
                               
         if ExitSimStatus %check if simulation finished correctly
             continue;
